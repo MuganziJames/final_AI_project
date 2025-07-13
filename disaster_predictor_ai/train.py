@@ -51,9 +51,18 @@ class ModelTrainer:
         )
         
         X, y = self.preprocessor.prepare_drought_data(df)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        
+        # Check class distribution and handle edge cases
+        unique_classes, class_counts = np.unique(y, return_counts=True)
+        if len(unique_classes) < 2 or min(class_counts) < 2:
+            print("Warning: Insufficient class distribution for stratified split. Using random split.")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
         
         model = RandomForestClassifier(
             n_estimators=100,
@@ -81,9 +90,18 @@ class ModelTrainer:
         )
         
         X, y = self.preprocessor.prepare_flood_data(df)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        
+        # Check class distribution and handle edge cases
+        unique_classes, class_counts = np.unique(y, return_counts=True)
+        if len(unique_classes) < 2 or min(class_counts) < 2:
+            print("Warning: Insufficient class distribution for stratified split. Using random split.")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
         
         model = RandomForestClassifier(
             n_estimators=100,
@@ -111,9 +129,18 @@ class ModelTrainer:
         )
         
         X, y = self.preprocessor.prepare_hunger_data(df)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        
+        # Check class distribution and handle edge cases
+        unique_classes, class_counts = np.unique(y, return_counts=True)
+        if len(unique_classes) < 2 or min(class_counts) < 2:
+            print("Warning: Insufficient class distribution for stratified split. Using random split.")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
         
         model = RandomForestClassifier(
             n_estimators=100,
