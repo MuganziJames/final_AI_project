@@ -1,5 +1,11 @@
 # 🌍 AI-Powered Climate Risk Assessment System
 
+## 🚀 **[🌐 Try the Live App →](https://finalaiproject-fexrvamcmq8p76hma3e5fy.streamlit.app/)**
+
+_Experience our AI-powered climate risk predictions in real-time! Ask questions like "Will there be drought in Kenya next year?" and get instant, actionable insights._
+
+---
+
 ## 🎯 About the Project
 
 ### Advancing UN Sustainable Development Goals
