@@ -162,7 +162,7 @@ disaster_predictor_ai/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd disaster_predictor_ai
+cd final_AI_project
 
 # Install dependencies
 pip install -r requirements.txt
