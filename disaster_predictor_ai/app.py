@@ -29,11 +29,13 @@ class ClimateRiskApp:
     
     def render_header(self):
         st.title("🌍 AI-Powered Climate Risk Assessment")
-        st.markdown("Ask questions about climate risks in natural language and get AI-powered predictions.")
+        st.markdown("Choose your preferred method: Ask questions in natural language or use manual selection.")
         
         with st.expander("💡 How to use this tool"):
             st.markdown("""
-            **Example:** *"Will there be drought in Turkana next year?"*
+            **Method 1 - Natural Language:** *"Will there be drought in Turkana next year?"*
+            
+            **Method 2 - Manual Selection:** Use the dropdown menus below
             
             **What you can ask about:**
             - 🌵 **Drought** risk in any African location
@@ -48,7 +50,7 @@ class ClimateRiskApp:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.subheader("Ask Your Question")
+            st.subheader("🤖 Natural Language Query")
             
             user_query = st.text_input(
                 "Type your climate risk question:",
@@ -59,7 +61,7 @@ class ClimateRiskApp:
             col_predict, col_clear = st.columns([1, 1])
             
             with col_predict:
-                predict_button = st.button("🔮 Get Prediction", type="primary", use_container_width=True)
+                predict_button = st.button("🔮 Get NLP Prediction", type="primary", use_container_width=True)
             
             with col_clear:
                 if st.button("🗑️ Clear", use_container_width=True):
@@ -68,6 +70,10 @@ class ClimateRiskApp:
             
             if predict_button and user_query:
                 self.process_query(user_query)
+            
+            st.divider()
+            
+            self.render_manual_interface()
         
         with col2:
             self.render_sidebar_content()
@@ -84,7 +90,8 @@ class ClimateRiskApp:
             if parsed_result["parsed_successfully"]:
                 self.show_successful_prediction(parsed_result, query)
             else:
-                self.show_fallback_interface(query, parsed_result)
+                confidence = parsed_result["confidence"]
+                st.warning(f"⚠️ Could not fully understand your query (confidence: {confidence}%). Please try the manual selection below or rephrase your question.")
     
     def show_successful_prediction(self, parsed_result: Dict, original_query: str):
         hazard = parsed_result["hazard"]
@@ -119,10 +126,9 @@ class ClimateRiskApp:
             
             self.show_location_details(location_details)
     
-    def show_fallback_interface(self, original_query: str, parsed_result: Dict):
-        st.warning("🤔 " + ResponseFormatter.format_fallback_message())
-        
-        st.subheader("Manual Selection")
+    def render_manual_interface(self):
+        st.subheader("📋 Manual Selection")
+        st.markdown("*Prefer dropdowns? Select your options below:*")
         
         col1, col2, col3 = st.columns(3)
         
@@ -130,19 +136,25 @@ class ClimateRiskApp:
             hazard_type = st.selectbox(
                 "Select Risk Type:",
                 options=["drought", "flood", "hunger", "crop"],
-                format_func=lambda x: x.title()
+                format_func=lambda x: x.title(),
+                key="manual_hazard"
             )
         
         with col2:
             countries = self.parser.get_available_countries()
             selected_country = st.selectbox(
                 "Select Country:",
-                options=sorted(countries)
+                options=sorted(countries),
+                key="manual_country"
             )
         
         with col3:
             time_options = ["Next 6 months", "Next year", "2025", "2026"]
-            selected_time = st.selectbox("Select Time Period:", options=time_options)
+            selected_time = st.selectbox(
+                "Select Time Period:", 
+                options=time_options,
+                key="manual_time"
+            )
         
         location_suggestions = [
             loc for loc, details in self.parser.locations.items() 
@@ -153,10 +165,11 @@ class ClimateRiskApp:
             selected_location = st.selectbox(
                 f"Select Location in {selected_country}:",
                 options=sorted(location_suggestions),
-                format_func=lambda x: x.title()
+                format_func=lambda x: x.title(),
+                key="manual_location"
             )
             
-            if st.button("🔮 Get Prediction", key="fallback_predict"):
+            if st.button("🎯 Get Manual Prediction", use_container_width=True, key="manual_predict"):
                 location_details = self.parser.locations[selected_location]
                 
                 with st.spinner("Generating prediction..."):
@@ -164,7 +177,7 @@ class ClimateRiskApp:
                         hazard_type, selected_location, location_details, selected_time
                     )
                     
-                    st.subheader("🎯 Prediction Result")
+                    st.subheader("🎯 Manual Prediction Result")
                     
                     if "High" in prediction:
                         st.error(f"⚠️ {prediction}")
@@ -174,6 +187,8 @@ class ClimateRiskApp:
                         st.success(f"✅ {prediction}")
                     
                     self.show_location_details(location_details)
+        else:
+            st.info(f"No locations found for {selected_country}. Please select a different country.")
     
     def show_location_details(self, location_details: Dict):
         if location_details:
