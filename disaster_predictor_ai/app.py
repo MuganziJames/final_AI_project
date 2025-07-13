@@ -62,15 +62,7 @@ class ClimateRiskApp:
                 key="user_query"
             )
             
-            col_predict, col_clear = st.columns([1, 1])
-            
-            with col_predict:
-                predict_button = st.button("🔮 Get NLP Prediction", type="primary", use_container_width=True)
-            
-            with col_clear:
-                if st.button("🗑️ Clear", use_container_width=True):
-                    st.session_state.user_query = ""
-                    st.rerun()
+            predict_button = st.button("🔮 Get NLP Prediction", type="primary", use_container_width=True)
             
             if predict_button and user_query:
                 self.process_query(user_query)
