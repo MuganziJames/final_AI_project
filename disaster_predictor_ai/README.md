@@ -14,11 +14,13 @@ A comprehensive Python-based AI system that helps users assess climate-related r
 ## Quick Start
 
 1. **Install Dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Train Models**
+
    ```bash
    python train.py
    ```
@@ -54,12 +56,14 @@ disaster_predictor_ai/
 ## Usage Examples
 
 ### Natural Language Queries
+
 - "Will there be drought in Turkana next year?"
 - "Flood risk in Lagos during rainy season"
 - "Food security in Borno state"
 - "Maize yield in Rift Valley this season"
 
 ### Supported Locations
+
 - **Countries**: Kenya, South Africa, Nigeria, Ethiopia, Ghana, Tanzania, Uganda, and more
 - **Regions**: East Africa, Sahel, Horn of Africa, Southern Africa
 - **Cities**: Nairobi, Lagos, Cape Town, Addis Ababa, Accra, Kampala
@@ -68,12 +72,14 @@ disaster_predictor_ai/
 ## Technical Details
 
 ### Machine Learning Models
+
 - **Drought Prediction**: Random Forest Classifier
-- **Flood Prediction**: Random Forest Classifier  
+- **Flood Prediction**: Random Forest Classifier
 - **Hunger Assessment**: Random Forest Classifier (3-class)
 - **Crop Yield**: Random Forest Regressor
 
 ### NLP Capabilities
+
 - Extensive synonym recognition
 - Fuzzy location matching
 - Multi-word location support
@@ -81,10 +87,13 @@ disaster_predictor_ai/
 - Graceful fallback handling
 
 ## Data Sources
+
 The system uses four main datasets covering climate, agricultural, and socioeconomic indicators across Africa.
 
 ## Contributing
+
 This project focuses on African climate resilience and food security. Contributions for additional regions or improved prediction accuracy are welcome.
 
 ## License
+
 Open source project for climate research and humanitarian applications.
