@@ -229,11 +229,13 @@ class ResponseFormatter:
     def _get_confidence_indicator(confidence: float) -> str:
         """Return indicator based on confidence level"""
         if confidence >= 85:
-            return "[HIGH]"  # High confidence
+            return "🟢"  # High confidence
         elif confidence >= 70:
-            return "[MED]"  # Medium confidence
+            return "🟡"  # Medium confidence
+        elif confidence >= 50:
+            return "🔴"  # Low confidence
         else:
-            return "[LOW]"  # Low confidence
+            return "🟤"  # Poor confidence
     
     @staticmethod
     def _add_actionable_advice(risk_level: str, hazard_type: str) -> str:
@@ -284,25 +286,25 @@ class ResponseFormatter:
         # Categorize yield levels
         if prediction >= 4.0:
             yield_category = "Excellent"
-            color_indicator = "[HIGH]"
+            color_indicator = "🟢"
         elif prediction >= 2.5:
             yield_category = "Good"
-            color_indicator = "[GOOD]"
+            color_indicator = "🟡"
         elif prediction >= 1.5:
             yield_category = "Fair"
-            color_indicator = "[FAIR]"
+            color_indicator = "🔴"
         else:
             yield_category = "Poor"
-            color_indicator = "[POOR]"
+            color_indicator = "🟤"
         
         return f"Expected crop yield in {location.title()}: {prediction:.2f} MT/HA ({yield_category} {color_indicator}) {confidence_icon} (Confidence: {confidence:.1f}%)"
     
     @staticmethod
     def create_risk_summary_table(location: str, predictions: Dict) -> str:
         """Create a formatted summary table of all risks for a location"""
-        summary = f"Risk Summary for {location.title()}\n\n"
+        summary = f"**Risk Summary for {location.title()}**\n\n"
         summary += "| Risk Type | Level | Confidence | Status |\n"
-        summary += "|-----------|-------|------------|--------|\n"
+        summary += "|:---------:|:-----:|:----------:|:------:|\n"
         
         for hazard_type, result in predictions.items():
             if result and not result.get('error'):
@@ -318,7 +320,14 @@ class ResponseFormatter:
                     level = "High" if pred == 1 else "Low"
                 
                 status_icon = ResponseFormatter._get_confidence_indicator(conf)
-                summary += f"| {hazard_type.title()} | {level} | {conf:.1f}% | {status_icon} |\n"
+                summary += f"| **{hazard_type.title()}** | {level} | {conf:.1f}% | {status_icon} |\n"
+        
+        # Add confidence explanation
+        summary += "\n**Confidence Level Guide:**\n"
+        summary += "- 🟢 High (85%+): Very reliable prediction\n"
+        summary += "- 🟡 Medium (70-84%): Moderately reliable prediction\n"
+        summary += "- 🔴 Low (50-69%): Less reliable, use with caution\n"
+        summary += "- 🟤 Poor (<50%): Very low reliability, seek additional data\n"
         
         return summary
 

@@ -75,29 +75,6 @@ class ClimateRiskApp:
             st.divider()
             
             self.render_manual_interface()
-            
-            # Add new comprehensive dashboard option
-            st.divider()
-            st.subheader("🎯 Comprehensive Risk Assessment")
-            
-            dashboard_col1, dashboard_col2 = st.columns([2, 1])
-            with dashboard_col1:
-                dashboard_location = st.selectbox(
-                    "Select location for comprehensive assessment:",
-                    options=sorted(list(self.parser.locations.keys())[:20]),  # Limit for performance
-                    format_func=lambda x: x.title(),
-                    key="dashboard_location"
-                )
-            
-            with dashboard_col2:
-                if st.button("📊 Generate Dashboard", use_container_width=True, key="generate_dashboard"):
-                    if dashboard_location:
-                        location_details = self.parser.locations[dashboard_location]
-                        self.render_risk_dashboard(dashboard_location, location_details)
-            
-            # Add data export section
-            with st.expander("📊 Data Export & Visualization"):
-                self.render_data_export_section()
         
         with col2:
             self.render_sidebar_content()
@@ -277,6 +254,18 @@ class ClimateRiskApp:
         """Render a comprehensive risk dashboard for a specific location"""
         st.subheader(f"🌍 Comprehensive Risk Assessment: {location_name.title()}")
         
+        # Add confidence explanation upfront
+        with st.expander("❓ Understanding Confidence Levels"):
+            st.markdown("""
+            **How to interpret confidence levels:**
+            - 🟢 **High (85%+)**: Very reliable prediction - strong confidence in the result
+            - 🟡 **Medium (70-84%)**: Moderately reliable prediction - good confidence but consider context
+            - 🔴 **Low (<70%)**: Less reliable prediction - use with caution and seek additional information
+            - 🟤 **Poor (<50%)**: Very low reliability - consider alternative data sources
+            
+            *Confidence reflects how certain the AI model is about its prediction based on available data.*
+            """)
+        
         # Get predictions for all hazard types
         all_predictions = {}
         for hazard_type in ['drought', 'flood', 'hunger', 'crop']:
@@ -285,7 +274,8 @@ class ClimateRiskApp:
                 all_predictions[hazard_type] = result
         
         if all_predictions:
-            # Create metrics row
+            # Create metrics row with improved styling
+            st.markdown("### 📊 Risk Overview")
             cols = st.columns(len(all_predictions))
             
             for i, (hazard_type, result) in enumerate(all_predictions.items()):
@@ -293,16 +283,26 @@ class ClimateRiskApp:
                     pred = result['prediction']
                     conf = result['confidence']
                     
+                    # Get confidence icon for visual indication
+                    if conf >= 85:
+                        conf_icon = "🟢"
+                    elif conf >= 70:
+                        conf_icon = "🟡"  
+                    elif conf >= 50:
+                        conf_icon = "🔴"
+                    else:
+                        conf_icon = "�"
+                    
                     if hazard_type == 'crop':
                         value = f"{pred:.1f} MT/HA"
-                        delta = "Good" if pred >= 2.5 else "Poor"
+                        delta = f"{'Good' if pred >= 2.5 else 'Poor'} {conf_icon}"
                     elif hazard_type == 'hunger':
                         levels = {0: "Low", 1: "Moderate", 2: "High"}
                         value = levels.get(pred, "Unknown")
-                        delta = f"{conf:.0f}% confidence"
+                        delta = f"{conf:.0f}% {conf_icon}"
                     else:
                         value = "High Risk" if pred == 1 else "Low Risk"
-                        delta = f"{conf:.0f}% confidence"
+                        delta = f"{conf:.0f}% {conf_icon}"
                     
                     st.metric(
                         label=f"{hazard_type.title()} Risk",
@@ -310,112 +310,13 @@ class ClimateRiskApp:
                         delta=delta
                     )
             
-            # Show detailed breakdown
-            with st.expander("📈 Detailed Risk Breakdown"):
+            # Show detailed breakdown with improved styling
+            st.markdown("### 📋 Detailed Analysis")
+            with st.expander("View Complete Risk Breakdown", expanded=True):
                 summary_table = ResponseFormatter.create_risk_summary_table(location_name, all_predictions)
                 st.markdown(summary_table)
         else:
             st.warning("Unable to generate comprehensive risk assessment. Some models may not be available.")
-
-    def render_data_export_section(self):
-        """Add data export and visualization options"""
-        st.subheader("📊 Data Export & Visualization")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("📥 Export Query History", use_container_width=True):
-                if st.session_state.query_history:
-                    history_df = pd.DataFrame([
-                        {
-                            "Query": entry["query"],
-                            "Confidence": entry["parsed"]["confidence"],
-                            "Hazard": entry["parsed"].get("hazard", "N/A"),
-                            "Location": entry["parsed"].get("location", "N/A"),
-                            "Timestamp": pd.Timestamp.now()
-                        }
-                        for entry in st.session_state.query_history
-                    ])
-                    
-                    csv = history_df.to_csv(index=False)
-                    st.download_button(
-                        label="Download CSV",
-                        data=csv,
-                        file_name=f"climate_risk_queries_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv"
-                    )
-                else:
-                    st.info("No query history available for export")
-        
-        with col2:
-            if st.button("📈 Generate Risk Map", use_container_width=True):
-                self.show_sample_risk_visualization()
-    
-    def show_sample_risk_visualization(self):
-        """Show sample risk visualization using available data"""
-        st.subheader("🗺️ Risk Visualization Dashboard")
-        
-        # Sample data for demonstration
-        sample_locations = [
-            {"name": "Nairobi", "lat": -1.29, "lon": 36.82, "drought_risk": 0.3, "flood_risk": 0.7},
-            {"name": "Lagos", "lat": 6.52, "lon": 3.38, "drought_risk": 0.2, "flood_risk": 0.8},
-            {"name": "Cape Town", "lat": -33.92, "lon": 18.42, "drought_risk": 0.8, "flood_risk": 0.2},
-            {"name": "Cairo", "lat": 30.04, "lon": 31.24, "drought_risk": 0.9, "flood_risk": 0.1},
-        ]
-        
-        # Create a simple map visualization
-        try:
-            import plotly.express as px
-            import plotly.graph_objects as go
-            
-            df = pd.DataFrame(sample_locations)
-            
-            fig = go.Figure()
-            
-            # Add drought risk points
-            fig.add_trace(go.Scattergeo(
-                lon=df['lon'],
-                lat=df['lat'],
-                text=df['name'],
-                mode='markers',
-                marker=dict(
-                    size=df['drought_risk'] * 20,
-                    color=df['drought_risk'],
-                    colorscale='YlOrRd',
-                    cmin=0,
-                    cmax=1,
-                    colorbar=dict(title="Drought Risk")
-                ),
-                name="Drought Risk"
-            ))
-            
-            fig.update_layout(
-                title="Sample Climate Risk Map - Africa",
-                geo=dict(
-                    projection_type='natural earth',
-                    showland=True,
-                    landcolor='lightgray',
-                    scope='africa'
-                ),
-                height=500
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-            
-        except ImportError:
-            st.info("Install plotly for advanced visualizations: `pip install plotly`")
-            
-            # Fallback to simple bar chart
-            df = pd.DataFrame(sample_locations)
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.bar_chart(df.set_index('name')[['drought_risk']])
-                st.caption("Drought Risk by Location")
-            
-            with col2:
-                st.bar_chart(df.set_index('name')[['flood_risk']])
-                st.caption("Flood Risk by Location")
 
     def run(self):
         try:
