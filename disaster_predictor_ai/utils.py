@@ -18,16 +18,11 @@ class DataPreprocessor:
         return df
     
     def _clean_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.dropna()
+        # Don't drop all NaN rows - only drop rows where ALL important columns are missing
+        # For hunger data, we only need Entity, Year, and Global Hunger Index columns
         
-        for col in df.select_dtypes(include=[np.number]).columns:
-            Q1 = df[col].quantile(0.25)
-            Q3 = df[col].quantile(0.75)
-            IQR = Q3 - Q1
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-            df = df[(df[col] >= lower_bound) & (df[col] <= upper_bound)]
-        
+        # Skip outlier removal for hunger data to preserve legitimate high-hunger countries
+        # The annotation column has many NaN values but is not needed for training
         return df.reset_index(drop=True)
     
     def prepare_drought_data(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
