@@ -134,6 +134,33 @@ class DataPreprocessor:
         
         with open(os.path.join(model_dir, 'feature_columns.pkl'), 'rb') as f:
             self.feature_columns = pickle.load(f)
+    
+    def add_climate_features(self, df: pd.DataFrame, location_data: Dict = None) -> pd.DataFrame:
+        """Add climate zone and seasonal features for better predictions"""
+        if location_data and 'lat' in location_data:
+            # Climate zone classification based on latitude
+            lat = location_data['lat']
+            if abs(lat) < 23.5:
+                df['climate_zone'] = 0  # Tropical
+            elif abs(lat) < 35:
+                df['climate_zone'] = 1  # Subtropical
+            elif abs(lat) < 50:
+                df['climate_zone'] = 2  # Temperate
+            else:
+                df['climate_zone'] = 3  # Cold
+        else:
+            df['climate_zone'] = 0  # Default to tropical for Africa
+        
+        # Add seasonal patterns if Year exists
+        if 'Year' in df.columns:
+            # Cyclical encoding for years to capture climate cycles
+            df['year_sin'] = np.sin(2 * np.pi * df['Year'] / 11)  # Solar cycle
+            df['year_cos'] = np.cos(2 * np.pi * df['Year'] / 11)
+            
+            # El Niño/La Niña cycle approximation
+            df['enso_cycle'] = np.sin(2 * np.pi * df['Year'] / 3.5)
+        
+        return df
 
 class ModelUtils:
     @staticmethod
@@ -199,33 +226,103 @@ class ModelUtils:
 
 class ResponseFormatter:
     @staticmethod
+    def _get_confidence_indicator(confidence: float) -> str:
+        """Return indicator based on confidence level"""
+        if confidence >= 85:
+            return "[HIGH]"  # High confidence
+        elif confidence >= 70:
+            return "[MED]"  # Medium confidence
+        else:
+            return "[LOW]"  # Low confidence
+    
+    @staticmethod
+    def _add_actionable_advice(risk_level: str, hazard_type: str) -> str:
+        """Add actionable advice based on prediction"""
+        advice_map = {
+            "drought": {
+                "High": "Recommendation: Increase water storage, consider drought-resistant crops",
+                "Low": "Recommendation: Normal farming practices, monitor seasonal forecasts"
+            },
+            "flood": {
+                "High": "Recommendation: Prepare drainage systems, consider elevated storage",
+                "Low": "Recommendation: Standard precautions, maintain drainage infrastructure"
+            },
+            "hunger": {
+                "High": "Recommendation: Enhance food security programs, diversify income sources",
+                "Moderate": "Recommendation: Monitor food prices, strengthen community networks",
+                "Low": "Recommendation: Maintain current nutrition programs"
+            }
+        }
+        return advice_map.get(hazard_type, {}).get(risk_level, "")
+    
+    @staticmethod
     def format_drought_prediction(prediction: int, confidence: float, location: str) -> str:
         risk_level = "High" if prediction == 1 else "Low"
-        return f"Drought risk in {location.title()}: {risk_level} (Confidence: {confidence:.1f}%)"
+        confidence_icon = ResponseFormatter._get_confidence_indicator(confidence)
+        advice = ResponseFormatter._add_actionable_advice(risk_level, "drought")
+        return f"Drought risk in {location.title()}: {risk_level} {confidence_icon} (Confidence: {confidence:.1f}%)\n{advice}"
     
     @staticmethod
     def format_flood_prediction(prediction: int, confidence: float, location: str) -> str:
         risk_level = "High" if prediction == 1 else "Low"
-        return f"Flood risk in {location.title()}: {risk_level} (Confidence: {confidence:.1f}%)"
+        confidence_icon = ResponseFormatter._get_confidence_indicator(confidence)
+        advice = ResponseFormatter._add_actionable_advice(risk_level, "flood")
+        return f"Flood risk in {location.title()}: {risk_level} {confidence_icon} (Confidence: {confidence:.1f}%)\n{advice}"
     
     @staticmethod
     def format_hunger_prediction(prediction: int, confidence: float, location: str) -> str:
         risk_levels = {0: "Low", 1: "Moderate", 2: "High"}
         risk_level = risk_levels.get(prediction, "Unknown")
-        return f"Hunger risk in {location.title()}: {risk_level} (Confidence: {confidence:.1f}%)"
+        confidence_icon = ResponseFormatter._get_confidence_indicator(confidence)
+        advice = ResponseFormatter._add_actionable_advice(risk_level, "hunger")
+        return f"Hunger risk in {location.title()}: {risk_level} {confidence_icon} (Confidence: {confidence:.1f}%)\n{advice}"
     
     @staticmethod
     def format_crop_prediction(prediction: float, confidence: float, location: str) -> str:
-        return f"Expected crop yield in {location.title()}: {prediction:.2f} MT/HA (Confidence: {confidence:.1f}%)"
+        confidence_icon = ResponseFormatter._get_confidence_indicator(confidence)
+        
+        # Categorize yield levels
+        if prediction >= 4.0:
+            yield_category = "Excellent"
+            color_indicator = "[HIGH]"
+        elif prediction >= 2.5:
+            yield_category = "Good"
+            color_indicator = "[GOOD]"
+        elif prediction >= 1.5:
+            yield_category = "Fair"
+            color_indicator = "[FAIR]"
+        else:
+            yield_category = "Poor"
+            color_indicator = "[POOR]"
+        
+        return f"Expected crop yield in {location.title()}: {prediction:.2f} MT/HA ({yield_category} {color_indicator}) {confidence_icon} (Confidence: {confidence:.1f}%)"
     
     @staticmethod
-    def format_fallback_message() -> str:
-        return "Sorry, we couldn't understand your location. Please use the dropdown below to select your area:"
-    
-    @staticmethod
-    def get_example_query() -> str:
-        return "Try asking: 'Will there be drought in Turkana next year?'"
+    def create_risk_summary_table(location: str, predictions: Dict) -> str:
+        """Create a formatted summary table of all risks for a location"""
+        summary = f"Risk Summary for {location.title()}\n\n"
+        summary += "| Risk Type | Level | Confidence | Status |\n"
+        summary += "|-----------|-------|------------|--------|\n"
+        
+        for hazard_type, result in predictions.items():
+            if result and not result.get('error'):
+                pred = result['prediction']
+                conf = result['confidence']
+                
+                if hazard_type == 'crop':
+                    level = "Good" if pred >= 2.5 else "Poor"
+                elif hazard_type == 'hunger':
+                    levels = {0: "Low", 1: "Moderate", 2: "High"}
+                    level = levels.get(pred, "Unknown")
+                else:
+                    level = "High" if pred == 1 else "Low"
+                
+                status_icon = ResponseFormatter._get_confidence_indicator(conf)
+                summary += f"| {hazard_type.title()} | {level} | {conf:.1f}% | {status_icon} |\n"
+        
+        return summary
 
+    # ...existing code...
 def validate_data_files(data_dir: str) -> Dict[str, bool]:
     required_files = [
         'drought_data.csv',

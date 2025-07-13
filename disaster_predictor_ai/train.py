@@ -3,8 +3,8 @@ import sys
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report, mean_squared_error, r2_score, make_scorer
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -76,10 +76,14 @@ class ModelTrainer:
         y_pred = model.predict(X_test)
         accuracy = (y_pred == y_test).mean()
         
+        # Cross-validation evaluation
+        cv_results = self.evaluate_model_with_cv(model, X, y)
+        
         model_path = get_model_paths(self.models_dir)['drought']
         ModelUtils.save_model(model, model_path)
         
         print(f"Drought model accuracy: {accuracy:.3f}")
+        print(f"Cross-validated accuracy: {cv_results['cv_accuracy_mean']:.3f} ± {cv_results['cv_accuracy_std']:.3f}")
         print(f"Saved to: {model_path}")
     
     def train_flood_model(self):
@@ -115,10 +119,14 @@ class ModelTrainer:
         y_pred = model.predict(X_test)
         accuracy = (y_pred == y_test).mean()
         
+        # Cross-validation evaluation
+        cv_results = self.evaluate_model_with_cv(model, X, y)
+        
         model_path = get_model_paths(self.models_dir)['flood']
         ModelUtils.save_model(model, model_path)
         
         print(f"Flood model accuracy: {accuracy:.3f}")
+        print(f"Cross-validated accuracy: {cv_results['cv_accuracy_mean']:.3f} ± {cv_results['cv_accuracy_std']:.3f}")
         print(f"Saved to: {model_path}")
     
     def train_hunger_model(self):
@@ -154,10 +162,14 @@ class ModelTrainer:
         y_pred = model.predict(X_test)
         accuracy = (y_pred == y_test).mean()
         
+        # Cross-validation evaluation
+        cv_results = self.evaluate_model_with_cv(model, X, y)
+        
         model_path = get_model_paths(self.models_dir)['hunger']
         ModelUtils.save_model(model, model_path)
         
         print(f"Hunger model accuracy: {accuracy:.3f}")
+        print(f"Cross-validated accuracy: {cv_results['cv_accuracy_mean']:.3f} ± {cv_results['cv_accuracy_std']:.3f}")
         print(f"Saved to: {model_path}")
     
     def train_crop_model(self):
@@ -184,12 +196,32 @@ class ModelTrainer:
         r2 = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         
+        # Cross-validation evaluation
+        cv_results = self.evaluate_model_with_cv(model, X, y, model_type='regression')
+        
         model_path = get_model_paths(self.models_dir)['crop']
         ModelUtils.save_model(model, model_path)
         
         print(f"Crop yield model R²: {r2:.3f}")
         print(f"Crop yield model RMSE: {rmse:.3f}")
+        print(f"Cross-validated R²: {cv_results['cv_r2_mean']:.3f} ± {cv_results['cv_r2_std']:.3f}")
         print(f"Saved to: {model_path}")
+
+    def evaluate_model_with_cv(self, model, X, y, model_type='classification', cv_folds=5):
+        """Evaluate model performance using cross-validation"""
+        
+        if model_type == 'classification':
+            scores = cross_val_score(model, X, y, cv=cv_folds, scoring='accuracy')
+            metric_name = 'accuracy'
+        else:
+            scores = cross_val_score(model, X, y, cv=cv_folds, scoring='r2')
+            metric_name = 'r2'
+        
+        return {
+            f'cv_{metric_name}_mean': scores.mean(),
+            f'cv_{metric_name}_std': scores.std(),
+            f'cv_{metric_name}_scores': scores
+        }
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
