@@ -42,8 +42,8 @@ venv.bak/
 .ipynb_checkpoints
 
 # Machine Learning Models (optional - comment out if you want to include models)
-disaster_predictor_ai/models/*.pkl
-*.pkl
+# disaster_predictor_ai/models/*.pkl
+# *.pkl
 
 # Data files (optional - comment out if you want to include data)
 # disaster_predictor_ai/data/*.csv
