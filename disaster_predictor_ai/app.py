@@ -3,6 +3,9 @@ import os
 import sys
 from typing import Dict, List
 import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import time
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -291,7 +294,7 @@ class ClimateRiskApp:
                     elif conf >= 50:
                         conf_icon = "🔴"
                     else:
-                        conf_icon = "�"
+                        conf_icon = "🟤"
                     
                     if hazard_type == 'crop':
                         value = f"{pred:.1f} MT/HA"
