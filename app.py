@@ -25,14 +25,14 @@ class ClimateRiskApp:
     
     def setup_page_config(self):
         st.set_page_config(
-            page_title="Climate Risk Predictor",
+            page_title="ClimateWise",
             page_icon="🌍",
             layout="wide",
             initial_sidebar_state="collapsed"
         )
     
     def render_header(self):
-        st.title("🌍 AI-Powered Climate Risk Assessment")
+        st.title("🌍 ClimateWise - AI-Powered Climate Risk Assessment")
         st.markdown("Choose your preferred method: Ask questions in natural language or use manual selection.")
         
         with st.expander("💡 How to use this tool"):

@@ -1,4 +1,10 @@
-# 🌍 AI-Powered Climate Risk Assessment System
+# 🌍 ClimateWise - AI-Powered Climate Risk Assessment System
+
+## 🚀 **[🌐 Try ClimateWise Live →](https://finalaiproject-fexrvamcmq8p76hma3e5fy.streamlit.app/)**
+
+*Experience ClimateWise's AI-powered climate risk predictions in real-time! Ask questions like "Will there be drought in Kenya next year?" and get instant, actionable insights.*AI-Powered Climate R**🌍 Building a Climate-Resilient Africa, One Prediction at a Time**
+
+*ClimateWise represents a significant step toward proactive climate risk management, enabling communities across Africa to prepare for and mitigate the impacts of climate change through advanced machine learning and natural language processing technologies.* Assessment System
 
 ## 🚀 **[🌐 Try the Live App →](https://finalaiproject-fexrvamcmq8p76hma3e5fy.streamlit.app/)**
 
@@ -10,7 +16,7 @@ _Experience our AI-powered climate risk predictions in real-time! Ask questions 
 
 ### Advancing UN Sustainable Development Goals
 
-This cutting-edge Climate Risk Predictor AI directly contributes to multiple **UN Sustainable Development Goals (SDGs)**, transforming how we approach climate resilience and disaster preparedness:
+This cutting-edge ClimateWise AI directly contributes to multiple **UN Sustainable Development Goals (SDGs)**, transforming how we approach climate resilience and disaster preparedness:
 
 - **🎯 SDG 1 - No Poverty**: By predicting crop failures and food insecurity, our system enables proactive interventions to protect vulnerable communities from climate-induced poverty
 - **🍽️ SDG 2 - Zero Hunger**: Advanced hunger and crop yield predictions help governments and NGOs allocate resources efficiently, preventing famine before it occurs
@@ -19,7 +25,7 @@ This cutting-edge Climate Risk Predictor AI directly contributes to multiple **U
 
 ### Real-World Impact & Transformation
 
-Our AI system transforms climate risk management from **reactive disaster response** to **proactive risk prevention**:
+Our ClimateWise AI system transforms climate risk management from **reactive disaster response** to **proactive risk prevention**:
 
 - **🚨 Early Warning Systems**: Provides 6-12 month advance warnings for droughts, floods, and food security crises
 - **📊 Resource Allocation**: Enables governments and humanitarian organizations to deploy resources before disasters strike
