@@ -4,7 +4,7 @@
 
 *Experience ClimateWise's AI-powered climate risk predictions in real-time! Ask questions like "Will there be drought in Kenya next year?" and get instant, actionable insights.*AI-Powered Climate R**🌍 Building a Climate-Resilient Africa, One Prediction at a Time**
 
-*ClimateWise represents a significant step toward proactive climate risk management, enabling communities across Africa to prepare for and mitigate the impacts of climate change through advanced machine learning and natural language processing technologies.* Assessment System
+_ClimateWise represents a significant step toward proactive climate risk management, enabling communities across Africa to prepare for and mitigate the impacts of climate change through advanced machine learning and natural language processing technologies._ Assessment System
 
 ## 🚀 **[🌐 Try the Live App →](https://finalaiproject-fexrvamcmq8p76hma3e5fy.streamlit.app/)**
 
