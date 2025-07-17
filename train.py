@@ -44,13 +44,13 @@ class ModelTrainer:
             return False
     
     def train_drought_model(self):
-        print("\nTraining drought prediction model...")
+        print("\nTraining enhanced drought prediction model...")
         
         df = self.preprocessor.load_and_clean_data(
             os.path.join(self.data_dir, 'drought_data.csv')
         )
         
-        X, y = self.preprocessor.prepare_drought_data(df)
+        X, y = self.preprocessor.prepare_enhanced_drought_data(df, self.data_dir)
         
         # Check class distribution and handle edge cases
         unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -65,8 +65,10 @@ class ModelTrainer:
             )
         
         model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
+            n_estimators=150,
+            max_depth=12,
+            min_samples_split=3,
+            min_samples_leaf=2,
             random_state=42,
             class_weight='balanced'
         )
@@ -87,13 +89,13 @@ class ModelTrainer:
         print(f"Saved to: {model_path}")
     
     def train_flood_model(self):
-        print("\nTraining flood prediction model...")
+        print("\nTraining enhanced flood prediction model...")
         
         df = self.preprocessor.load_and_clean_data(
             os.path.join(self.data_dir, 'flood_data.csv')
         )
         
-        X, y = self.preprocessor.prepare_flood_data(df)
+        X, y = self.preprocessor.prepare_enhanced_flood_data(df, self.data_dir)
         
         # Check class distribution and handle edge cases
         unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -108,8 +110,10 @@ class ModelTrainer:
             )
         
         model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=8,
+            n_estimators=120,
+            max_depth=10,
+            min_samples_split=4,
+            min_samples_leaf=2,
             random_state=42,
             class_weight='balanced'
         )
@@ -136,7 +140,7 @@ class ModelTrainer:
             os.path.join(self.data_dir, 'hunger_data.csv')
         )
         
-        X, y = self.preprocessor.prepare_hunger_data(df)
+        X, y = self.preprocessor.prepare_enhanced_hunger_data(df, self.data_dir)
         
         # Check class distribution and handle edge cases
         unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -151,8 +155,10 @@ class ModelTrainer:
             )
         
         model = RandomForestClassifier(
-            n_estimators=100,
+            n_estimators=130,
             max_depth=8,
+            min_samples_split=5,
+            min_samples_leaf=3,
             random_state=42,
             class_weight='balanced'
         )
@@ -173,20 +179,22 @@ class ModelTrainer:
         print(f"Saved to: {model_path}")
     
     def train_crop_model(self):
-        print("\nTraining crop yield prediction model...")
+        print("\nTraining enhanced crop yield prediction model...")
         
         df = self.preprocessor.load_and_clean_data(
             os.path.join(self.data_dir, 'crop_data.csv')
         )
         
-        X, y = self.preprocessor.prepare_crop_data(df)
+        X, y = self.preprocessor.prepare_enhanced_crop_data(df, self.data_dir)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
         
         model = RandomForestRegressor(
-            n_estimators=100,
-            max_depth=12,
+            n_estimators=140,
+            max_depth=15,
+            min_samples_split=3,
+            min_samples_leaf=2,
             random_state=42
         )
         
